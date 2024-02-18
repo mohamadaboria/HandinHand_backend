@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { default: helmet } = require("helmet");
 require("dotenv/config");
-const { authJwt } = require("./helpers/jwt");
+//const { authJwt } = require("./helpers/jwt");
 const compression = require("compression");
 
 const app = express();
@@ -25,7 +25,7 @@ app.use(compression());
 // helmet for security
 app.use(helmet());
 // jwt auth
-app.use(authJwt());
+//app.use(authJwt());
 
 // for logging request
 app.use(morgan("dev"));
