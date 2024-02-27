@@ -13,7 +13,7 @@ const researchSchema = mongoose.Schema(
         status: {
           type: String,
           default: "pending",
-          enum: ["pending", "accepted", "notAccepted"],
+          enum: ["pending", "accepted", "rejected"],
         },
         student: {
           type: mongoose.Types.ObjectId,
@@ -32,38 +32,38 @@ const researchSchema = mongoose.Schema(
       required: true,
     },
     hand: {
-      type: Array,
+      type: [String],
       enum: ["left", "right"],
       required: false,
     },
 
     language: {
-      type: Array,
+      type: [String],
       enum: ["arabic", "english", "hebrew"],
       required: false,
     },
     vision: {
-      type: Array,
+      type: [String],
       enum: ["normal", "notNormal"],
       required: false,
     },
     hearingNormal: {
-      type: Array,
+      type: [String],
       enum: ["yes", "no"],
       required: false,
     },
     origin: {
-      type: Array,
+      type: [String],
       enum: ["israel", "usa"],
       required: false,
     },
     ADHD: {
-      type: Array,
+      type: [String],
       enum: ["yes", "no"],
       required: false,
     },
     musicalBackground: {
-      type: Array,
+      type: [String],
       enum: ["yes", "no"],
       required: false,
     },
@@ -77,8 +77,16 @@ const researchSchema = mongoose.Schema(
       default: "active",
     },
     approvment: {
-      type: string,
+      type: String,
       required: false,
+    },
+    description: {
+      type: String,
+      default: "",
+    },
+    newRequest: {
+      type: Number,
+      default: 0,
     },
   },
   {
