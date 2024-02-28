@@ -66,10 +66,10 @@ exports.Register = async (req, res, next) => {
         userId: user._id,
         type: user.type,
       },
-      secret,
-      {
-        expiresIn: "1d",
-      }
+      secret
+      // {
+      //   expiresIn: "1d",
+      // }
     );
 
     return res.status(201).send({ ...user.toObject(), token });
@@ -102,6 +102,16 @@ exports.login = async (req, res, next) => {
           expiresIn: "1d",
         }
       );
+
+      //update firebase token of user
+      if (
+        req.body.fbToken &&
+        req.body.fbToken !== null &&
+        req.body.fbToken !== undefined
+      ) {
+        user.fbToken = req.body.fbToken;
+        await user.save();
+      }
 
       return res.status(200).send({
         ...user.toObject(),

@@ -5,13 +5,16 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { default: helmet } = require("helmet");
 require("dotenv/config");
-//const { authJwt } = require("./helpers/jwt");
+const { authJwt } = require("./helpers/jwt");
 const compression = require("compression");
+require("aws-sdk/lib/maintenance_mode_message").suppress = true;
 
 const app = express();
 
 //routes
 const userRouter = require("./routers/user.router");
+const researcherRouter = require("./routers/researcher.router");
+const studentRouter = require("./routers/student.router");
 
 // CORS is a node.js package for providing a Connect/Express middlewares that can be used to enable CORS with various options.
 app.use(cors());
@@ -25,7 +28,7 @@ app.use(compression());
 // helmet for security
 app.use(helmet());
 // jwt auth
-//app.use(authJwt());
+app.use(authJwt());
 
 // for logging request
 app.use(morgan("dev"));
@@ -51,6 +54,8 @@ app.get("/", (req, res) => {
 // routes api
 const api = process.env.API_URL;
 app.use(`${api}/users`, userRouter);
+app.use(`${api}/researchers`, researcherRouter);
+app.use(`${api}/students`, studentRouter);
 
 //Setup Error Handlers
 const errorHandlers = require("./helpers/errorHandlers");
