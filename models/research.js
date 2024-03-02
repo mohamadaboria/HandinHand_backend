@@ -24,6 +24,9 @@ const researchSchema = mongoose.Schema(
           type: Date,
           default: new Date(),
         },
+        isCredit: {
+          type: Boolean,
+        },
       },
     ],
 
@@ -33,38 +36,38 @@ const researchSchema = mongoose.Schema(
     },
     hand: {
       type: [String],
-      enum: ["left", "right"],
+      enum: ["left", "right", "notRelevant"],
       required: false,
     },
 
     language: {
       type: [String],
-      enum: ["arabic", "english", "hebrew"],
+      enum: ["arabic", "english", "hebrew", "notRelevant"],
       required: false,
     },
     vision: {
       type: [String],
-      enum: ["normal", "notNormal"],
+      enum: ["normal", "notNormal", "notRelevant"],
       required: false,
     },
     hearingNormal: {
       type: [String],
-      enum: ["yes", "no"],
+      enum: ["yes", "no", "notRelevant"],
       required: false,
     },
     origin: {
       type: [String],
-      enum: ["israel", "usa"],
+      enum: ["israel", "usa", "notRelevant"],
       required: false,
     },
     ADHD: {
       type: [String],
-      enum: ["yes", "no"],
+      enum: ["yes", "no", "notRelevant"],
       required: false,
     },
     musicalBackground: {
       type: [String],
-      enum: ["yes", "no"],
+      enum: ["yes", "no", "notRelevant"],
       required: false,
     },
     Credits: {

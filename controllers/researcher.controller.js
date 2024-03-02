@@ -1,5 +1,6 @@
 const { getUserByToken } = require("../helpers/getUserByToken");
 const { postImageLocatianSpecify } = require("../helpers/imageStorage");
+const { sendPushNotification } = require("../helpers/sendNotification");
 const { Research } = require("../models/research");
 const { User } = require("../models/user");
 const { validateCreateResearch } = require("../validations/validators");
@@ -81,7 +82,7 @@ exports.createResearch = async (req, res, next) => {
   }
 };
 
-// get All Research of research by token
+// get All Researches of researcher by token
 exports.getAllResearchesOfUser = async (req, res, next) => {
   try {
     const userByToken = await getUserByToken(req, res);
@@ -94,6 +95,28 @@ exports.getAllResearchesOfUser = async (req, res, next) => {
 
     const AllResearches = await Research.find({
       researher: userByToken._id,
+    }).populate("researher studentsStatus.student", "-password");
+
+    if (!AllResearches) {
+      return res.status(404).send({ message: "Internal Server error " });
+    }
+
+    return res.status(201).json({ researches: AllResearches });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "Internal Server Error", message: error["message"] });
+  }
+};
+
+// get All Researches of researcher by researcher id
+exports.getAllResearchesOfResearcher = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const AllResearches = await Research.find({
+      researher: id,
     }).populate("researher studentsStatus.student", "-password");
 
     if (!AllResearches) {
@@ -209,29 +232,108 @@ exports.changeResearchStatusofStudent = async (req, res, next) => {
         message: "Invalid access token",
       });
 
-    const { status, student, research } = req.query;
+    const { status, student, research } = req.body;
+
     if (status !== "accepted" && status !== "rejected")
       return res
         .status(400)
         .send({ message: "status must be accepted or rejected" });
     const studentExist = await User.findById(student);
-    if (!studentExist) return res.status(400).send();
+    if (!studentExist)
+      return res.status(400).send({ message: "student not found" });
 
-    const researchExist = await Research.findById(research);
+    const researchExist = await Research.findById(research).populate(
+      "researher studentsStatus.student",
+      "-password"
+    );
     if (!researchExist)
       return res.status(400).json({ message: "Research Not found" });
 
-    researchExist.studentsStatus.forEach((el) => {
-      if (el.student.toString() === student.toString()) {
-        el.status = status;
-        el.updateTime = new Date();
+    console.log("req.body");
+    console.log(req.body);
+
+    researchExist.studentsStatus.forEach(async (el) => {
+      if (el.student._id.toString() === student.toString()) {
+        if (el.status != "pending") {
+          console.log("sssss");
+          return res.status(402).send({
+            message: `you can not change the status of student again`,
+          });
+        } else {
+          console.log("true", status);
+          el.status = status;
+          el.updateTime = new Date();
+          researchExist.newRequest = parseInt(researchExist.newRequest) - 1;
+          await researchExist.save();
+          //send notification for student that accepted or rejected of research
+          const title = "HandInHand";
+          const body = ` You have been ${status} in the research submitted by researcher ${
+            userByToken.name
+          } ${
+            status === "accepted"
+              ? "and within 48 hours you will receive details of the location and timing of the meeting"
+              : ""
+          } `;
+          await sendPushNotification(
+            studentExist,
+            title,
+            body,
+            "private",
+            research
+          );
+
+          return res.status(200).send({
+            message: "update status of student successfully",
+            research: researchExist,
+          });
+        }
       }
     });
-    await researchExist.save();
-
-    //send notification for student that accepted or rejected of research
 
     //return success message
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "Internal Server Error", message: error["message"] });
+  }
+};
+
+//get All accepted student in all researches
+exports.getAllAcceptedStudentsResearchesOfUser = async (req, res, next) => {
+  try {
+    const userByToken = await getUserByToken(req, res);
+    // Check if invalid token sent
+    if (!userByToken || userByToken.type !== "researcher")
+      return res.status(401).json({
+        success: false,
+        message: "Invalid access token",
+      });
+
+    const AllResearches = await Research.find({
+      researher: userByToken._id,
+      "studentsStatus.status": "accepted",
+    }).populate("researher studentsStatus.student", "-password");
+
+    if (!AllResearches) {
+      return res.status(404).send({ message: "Internal Server error " });
+    }
+
+    // Extract only the accepted students from each research
+    const acceptedStudents = AllResearches.reduce((acc, research) => {
+      research.studentsStatus.forEach((studentStatus) => {
+        if (studentStatus.status === "accepted") {
+          acc.push({
+            researchId: research._id,
+            researcher: research.researher,
+            student: studentStatus.student,
+          });
+        }
+      });
+      return acc;
+    }, []);
+
+    return res.status(201).json({ researches: acceptedStudents });
   } catch (error) {
     console.error(error);
     res
