@@ -2,6 +2,8 @@ const { User } = require("../models/user");
 const bycript = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { userRegister } = require("../validations/validators");
+const { Message } = require("../models/message");
+const { getUserByToken } = require("../helpers/getUserByToken");
 
 //register
 exports.Register = async (req, res, next) => {
@@ -97,10 +99,10 @@ exports.login = async (req, res, next) => {
           userId: user._id,
           type: user.type,
         },
-        secret,
-        {
-          expiresIn: "1d",
-        }
+        secret
+        // {
+        //   expiresIn: "1d",
+        // }
       );
 
       //update firebase token of user
@@ -151,5 +153,31 @@ exports.getAllResearchers = async (req, res, next) => {
     res
       .status(500)
       .json({ error: "Internal Server Error", message: error["message"] });
+  }
+};
+
+//get all notification of user by token
+exports.getAllNotificationByToken = async (req, res, next) => {
+  try {
+    const userByToken = await getUserByToken(req, res);
+    // Check if invalid token sent
+    if (!userByToken)
+      return res.status(401).json({
+        success: false,
+        message: "Invalid access token",
+      });
+
+    const allNotifications = await Message.find({
+      user: userByToken._id,
+    })
+      .populate("user research")
+      .sort({ createdAt: -1 });
+    return res.status(200).json(allNotifications);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: error["message"],
+      message: "Internal Server error",
+    });
   }
 };
