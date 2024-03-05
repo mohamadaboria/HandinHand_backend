@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { Message } = require("../models/message");
 const serverKey =
-  "AAAAZRdqRN0:APA91bFL6aib9cEoH97BAI5mrglWpx5o_hHEeHVSh1phnjOtVFOrXXc565Bv5j74BZOTUYJWg2_EwnTBt724oa1qQembqLJR4a35IrdVP_mL3VbRZil0vlHFAHqz0y4lCRKRItxnMtht";
+  "AAAAHlAovqM:APA91bHIP4tVa4D-zB0oI1txFqOjwBGgCzrVpymxPI1wjNaf3k0oEgJoZ4ilfCoOK6BCve0cg32DCiB4qHr1RD9YVjIqmNbnFG4BRv_qSYzgOpoS2kJm3iWG8m9YFVGamSqwT1RPBCfx";
 const fcmEndpoint = "https://fcm.googleapis.com/fcm/send";
 
 //push notification
