@@ -10,7 +10,7 @@ router.post(
   researcherController.createResearch
 );
 
-// get All Research of research by token
+// get All Researches of researcher by token
 router.get("/user/researchs", researcherController.getAllResearchesOfUser);
 
 // get all researchs based algorithm at leaset half or more items acheived
@@ -23,6 +23,18 @@ router.get(
 router.put(
   "/research/student/status",
   researcherController.changeResearchStatusofStudent
+);
+
+//get All accepted student in all researches
+router.get(
+  "/students/accepted",
+  researcherController.getAllAcceptedStudentsResearchesOfUser
+);
+
+// get All Researches of researcher by researcher id
+router.get(
+  "/researcher/researches/:id",
+  researcherController.getAllResearchesOfResearcher
 );
 
 module.exports = router;

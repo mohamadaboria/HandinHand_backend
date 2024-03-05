@@ -14,4 +14,7 @@ router.get("/students", userController.getAllStudents);
 //get all Researchers
 router.get("/researchers", userController.getAllResearchers);
 
+//get all notification of user by token
+router.get("/notifications", userController.getAllNotificationByToken);
+
 module.exports = router;

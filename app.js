@@ -15,6 +15,8 @@ const app = express();
 const userRouter = require("./routers/user.router");
 const researcherRouter = require("./routers/researcher.router");
 const studentRouter = require("./routers/student.router");
+const messageRouter = require("./routers/message.router");
+const gradeRouter = require("./routers/grade.router");
 
 // CORS is a node.js package for providing a Connect/Express middlewares that can be used to enable CORS with various options.
 app.use(cors());
@@ -56,6 +58,8 @@ const api = process.env.API_URL;
 app.use(`${api}/users`, userRouter);
 app.use(`${api}/researchers`, researcherRouter);
 app.use(`${api}/students`, studentRouter);
+app.use(`${api}/messages`, messageRouter);
+app.use(`${api}/grads`, gradeRouter);
 
 //Setup Error Handlers
 const errorHandlers = require("./helpers/errorHandlers");

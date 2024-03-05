@@ -30,16 +30,36 @@ const createResearchSchema = Joi.object({
   researher: Joi.string(),
   description: Joi.string(),
   researchQuestion: Joi.string().required(),
-  hand: Joi.array().items("left", "right").required().min(1),
-  language: Joi.array().items("arabic", "english", "hebrew").required().min(1),
-  vision: Joi.array().items("normal", "notNormal").required().min(1),
-  hearingNormal: Joi.array().items("yes", "no").required().min(1),
-  origin: Joi.array().items("israel", "usa").required().min(1),
-  ADHD: Joi.array().items("yes", "no").required().min(1),
-  musicalBackground: Joi.array().items("yes", "no").required().min(1),
+  hand: Joi.array().items("left", "right", "notRelevant").required().min(1),
+  language: Joi.array()
+    .items("arabic", "english", "hebrew", "notRelevant")
+    .required()
+    .min(1),
+  vision: Joi.array()
+    .items("normal", "notNormal", "notRelevant")
+    .required()
+    .min(1),
+  hearingNormal: Joi.array()
+    .items("yes", "no", "notRelevant")
+    .required()
+    .min(1),
+  origin: Joi.array().items("israel", "usa", "notRelevant").required().min(1),
+  ADHD: Joi.array().items("yes", "no", "notRelevant").required().min(1),
+  musicalBackground: Joi.array()
+    .items("yes", "no", "notRelevant")
+    .required()
+    .min(1),
   Credits: Joi.number().required(),
   approvment: Joi.string(),
 });
 
+//add grade
+const createGradeSchema = Joi.object({
+  student: Joi.string().required(),
+  research: Joi.string().required(),
+  status: Joi.boolean().required(),
+});
+
 exports.userRegister = validator(registerSchema);
 exports.validateCreateResearch = validator(createResearchSchema);
+exports.validateCreateGrade = validator(createGradeSchema);

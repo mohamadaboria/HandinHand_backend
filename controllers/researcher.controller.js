@@ -4,6 +4,45 @@ const { sendPushNotification } = require("../helpers/sendNotification");
 const { Research } = require("../models/research");
 const { User } = require("../models/user");
 const { validateCreateResearch } = require("../validations/validators");
+const fs = require("fs");
+const path = require("path");
+const aws = require("aws-sdk");
+const { v4: uuidv4 } = require("uuid");
+
+// Function to save base64 data as an image file
+function saveBase64Image(base64Data) {
+  const imageBuffer = Buffer.from(base64Data, "base64");
+  const fileName = uuidv4(); // Generate a unique filename
+  const filePath = path.join(__dirname, `../public/uploads/${fileName}.png`); // Path to save the image file
+  fs.writeFileSync(filePath, imageBuffer); // Save the image file
+  return filePath;
+}
+
+// Function to upload file to Amazon S3
+async function uploadFileToS3(filePath) {
+  aws.config.update({
+    secretAccessKey: "vMacd2NsOKFXJoOZJx8G5LoNR9qlBy6nPpudoJqI",
+    accessKeyId: "AKIAX4V6NCUOXMOTNHGN",
+    region: "us-east-1",
+  });
+
+  let s3 = new aws.S3();
+
+  const fileContent = fs.readFileSync(filePath);
+
+  const params = {
+    Bucket: "handinhand-demo",
+    Key: path.basename(filePath),
+    Body: fileContent,
+    ContentType: "image/png", // Set the content type as per your requirement
+  };
+
+  const file = await s3.upload(params).promise();
+  // Remove the image file from the project directory
+  fs.unlinkSync(filePath);
+  // Return the S3 path of the uploaded image
+  return file.Location;
+}
 
 //create new research
 exports.createResearch = async (req, res, next) => {
@@ -36,20 +75,21 @@ exports.createResearch = async (req, res, next) => {
       musicalBackground,
       Credits,
       description,
+      approvment,
     } = req.body;
 
-    console.log("bpdyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
-    console.log(req.body);
-    console.log("bpdyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
+    // console.log("bpdyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
+    // // console.log(req.body);
+    // console.log("bpdyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
 
     const researchExist = await Research.findOne({ researchQuestion });
     if (researchExist)
       return res.status(400).json({ message: "Research already exists" });
 
-    let path = postImageLocatianSpecify(req);
-
-    console.log("Path");
-    console.log(path);
+    // Decode base64 data and save it as an image file
+    const approvementFilePath = saveBase64Image(approvment);
+    // Upload the image file to S3
+    const s3Path = await uploadFileToS3(approvementFilePath);
 
     let research = new Research({
       researher: userByToken._id,
@@ -63,7 +103,7 @@ exports.createResearch = async (req, res, next) => {
       musicalBackground,
       Credits,
       description,
-      // approvment: path,
+      approvment: s3Path,
     });
 
     research = await research.save();
