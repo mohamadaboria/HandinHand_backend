@@ -13,7 +13,7 @@ exports.sendPushNotification = async (user, title, body, type, research) => {
       body,
       type,
       research,
-      //  image:'http://178.62.69.123/public/uploads/accountant_logo.jpeg'
+      
     };
 
     const message = {

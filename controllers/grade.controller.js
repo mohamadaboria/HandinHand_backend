@@ -5,7 +5,7 @@ const { Research } = require("../models/research");
 const { User } = require("../models/user");
 const { validateCreateGrade } = require("../validations/validators");
 
-//get all grades of student
+//add grade to student
 exports.addGrdeToStudent = async (req, res, next) => {
   try {
     const userByToken = await getUserByToken(req, res);
@@ -59,6 +59,30 @@ exports.addGrdeToStudent = async (req, res, next) => {
         : `Unfortunately, the grades were not added to your research with researcher ${userByToken.name} because he did not attend all the meetings.`;
     await sendPushNotification(studentExist, title, body, "private", research);
     return res.status(200).send({ message: "Add grade Successfully", grade });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//get all grade of student
+exports.getAllStudent = async (req, res, next) => {
+  try {
+    const userByToken = await getUserByToken(req, res);
+    if (!userByToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid access token",
+      });
+    }
+
+    const allGrades = await Grade.find({ student: userByToken._id }).populate(
+      "research researcher"
+    );
+    if (!allGrades)
+      return res.status(401).send({ message: "internal server error" });
+
+    return res.status(200).json({ allGrades });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
