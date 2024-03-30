@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const { userRegister } = require("../validations/validators");
 const { Message } = require("../models/message");
 const { getUserByToken } = require("../helpers/getUserByToken");
+const mongoose = require("mongoose");
+const { postImageLocatianSpecify } = require("../helpers/imageStorage");
 
 //register
 exports.Register = async (req, res, next) => {
@@ -173,6 +175,62 @@ exports.getAllNotificationByToken = async (req, res, next) => {
       .populate("user research")
       .sort({ createdAt: -1 });
     return res.status(200).json(allNotifications);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: error["message"],
+      message: "Internal Server error",
+    });
+  }
+};
+
+// get user by token
+exports.getUserByToken = async (req, res, next) => {
+  try {
+    const userByToken = await getUserByToken(req, res);
+    // Check if invalid token sent
+    if (!userByToken)
+      return res.status(401).json({
+        success: false,
+        message: "Invalid access token",
+      });
+    return res.status(200).json(userByToken);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: error["message"],
+      message: "Internal Server error",
+    });
+  }
+};
+
+//edit profile
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const userByToken = await getUserByToken(req, res);
+    // Check if invalid token sent
+    if (!userByToken)
+      return res.status(401).json({
+        success: false,
+        message: "Invalid access token",
+      });
+
+    const { name, mobile, email, birthDate } = req.body;
+
+    let Path = await postImageLocatianSpecify(req);
+
+    let user = await User.findByIdAndUpdate(
+      userByToken._id,
+      {
+        name,
+        mobile,
+        email,
+        birthDate,
+        image: Path,
+      },
+      { new: true }
+    );
+    return res.status(200).json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({
